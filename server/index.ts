@@ -4,6 +4,7 @@ import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
 import { lucia } from "./lucia";
 import type { Context } from "./context";
+import { authRouter } from "@/routes/auth.ts";
 
 const app = new Hono<Context>();
 
@@ -27,14 +28,17 @@ app.use("*", cors() ,async (c, next) => {
   return next();
 });
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const routes = app.basePath("/api").route("/auth", authRouter)
+
 app.onError((err, c) => {
   if (err instanceof HTTPException) {
     const errResponse = err.res ?? c.json<ErrorResponse>({
       success: false,
       error: err.message,
       isFormError:
-        err.cause && typeof err.cause === "object" && "form" in err.cause 
-        ? err.cause.form === true 
+        err.cause && typeof err.cause === "object" && "form" in err.cause
+        ? err.cause.form === true
         : false,
     }, err.status);
 
@@ -43,10 +47,12 @@ app.onError((err, c) => {
 
   return c.json<ErrorResponse>({
     success: false,
-    error: process.env.NODE_ENV === "production" 
+    error: process.env.NODE_ENV === "production"
     ? "Internal Server Error"
     : (err.stack ?? err.message),
   }, 500);
 })
 
 export default app;
+
+export type ApiRoutes = typeof routes;
