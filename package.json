@@ -1,0 +1,12 @@
+{
+  "name": "betternews",
+  "scripts": {
+    "dev": "bun run --hot server/index.ts"
+  },
+  "dependencies": {
+    "hono": "^4.9.4"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}
