@@ -1,7 +1,9 @@
 {
   "name": "betternews",
   "scripts": {
-    "dev": "bun run --hot server/index.ts"
+    "dev": "bun run --hot server/index.ts",
+    "format:write": "prettier . --write",
+    "format:check": "prettier . --check"
   },
   "dependencies": {
     "hono": "^4.9.4"
