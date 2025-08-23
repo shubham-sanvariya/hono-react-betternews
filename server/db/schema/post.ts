@@ -3,6 +3,8 @@ import { relations } from "drizzle-orm";
 import { userTable } from "@/db/schema/auth.ts";
 import { postUpvotesTable } from "@/db/schema/upvotes.ts";
 import { commentsTable } from "@/db/schema/comments.ts";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
 
 
 export const postTable = pgTable("posts", {
@@ -17,6 +19,12 @@ export const postTable = pgTable("posts", {
     withTimezone: true
   }).defaultNow().notNull(),
 });
+
+export const insertPostSchema = createInsertSchema(postTable, {
+  title: z.string().min(3, { message : "Title must be at least 3 chars"}),
+  url: z.url({ message: "URL must be a valid URL"}).optional().or(z.literal("")),
+  content: z.string().optional(),
+})
 
 export const postsRelations = relations(postTable, ({one, many}) => ({
   author: one(userTable, {
