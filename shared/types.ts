@@ -45,4 +45,27 @@ export const paginationSchema = z.object({
   order: orderSchema.optional().default("desc"),
   author: z.optional(z.string()),
   site: z.string().optional()
-})
+});
+
+export type Post = {
+  id: number,
+  title: string;
+  url: string | null;
+  content: string | null;
+  points: number;
+  createdAt: string;
+  commentCount: number;
+  author: {
+    id: string;
+    username: string;
+  };
+  isUpvoted: boolean
+};
+
+export type PaginatedResponse<T> = {
+  pagination: {
+    page: number
+    totalPages: number
+  };
+  data: T;
+} & Omit<SuccessResponse, "data">;
