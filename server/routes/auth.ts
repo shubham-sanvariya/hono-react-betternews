@@ -11,6 +11,7 @@ import { generateId } from "lucia";
 import postgres from "postgres";
 
 import { loginSchema, type SuccessResponse } from "@/shared/types.ts";
+import { loggedIn } from "@/middleware/loggedIn.ts";
 
 export const authRouter = new Hono<Context>()
   .post("/signup", zValidator("form", loginSchema), async (c) => {
@@ -55,15 +56,21 @@ export const authRouter = new Hono<Context>()
 
     if (!existingUser){
       throw new HTTPException(401, {
-        message: "Incorrect username"
+        message: "Incorrect username",
+        cause: {form: true}
       })
     }
 
     const validPassword = await Bun.password.verify(password, existingUser.password_hash);
 
     if (!validPassword){
-      throw new HTTPException(401, { message: "Incorrect password"});
+      throw new HTTPException(401, { message: "Incorrect password", cause: {form: true}});
     }
+
+    const session = await lucia.createSession(existingUser.id, { username });
+    const sessionCookie = lucia.createSessionCookie(session.id).serialize();
+
+    c.header("Set-Cookie", sessionCookie, { append: true });
 
     return c.json<SuccessResponse>(
       {
@@ -72,7 +79,8 @@ export const authRouter = new Hono<Context>()
       },
       200,
     );
-  }).get("/logout", async (c) => {
+  })
+  .get("/logout", async (c) => {
     const session = c.get("session")
     if (!session){
       return c.redirect("/");
@@ -82,6 +90,16 @@ export const authRouter = new Hono<Context>()
     c.header("Set-Cookie", lucia.createBlankSessionCookie().serialize());
 
     return c.redirect("/")
+  })
+  .get("/user", loggedIn, async (c) => {
+    const user = c.get("user")!
+
+    return c.json<SuccessResponse< { username: string } >>({
+      success: true,
+      message: "User fetched",
+      data: { username: user.username }
+    });
+
   });
 
 
