@@ -14,7 +14,7 @@ export const postUpvotesTable = pgTable("post_upvotes",{
   }).defaultNow().notNull(),
 });
 
-const postUpvotesRelations = relations(postUpvotesTable, ({ one }) => ({
+export const postUpvotesRelations = relations(postUpvotesTable, ({ one }) => ({
   post: one(postTable, {
     fields: [postUpvotesTable.postId],
     references: [postTable.id],
@@ -36,7 +36,7 @@ export const commentUpvotesTable = pgTable("comment_upvotes",{
   }).defaultNow().notNull(),
 });
 
-const commentUpvotesRelations = relations(commentUpvotesTable, ({ one }) => ({
+export const commentUpvotesRelations = relations(commentUpvotesTable, ({ one }) => ({
   comment: one(commentsTable, {
     fields: [commentUpvotesTable.commentId],
     references: [commentsTable.id],
