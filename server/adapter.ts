@@ -5,9 +5,9 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import posgtres from "postgres";
 
 import { z } from "zod";
-import { sessionTable, userTable } from "./db/schema/auth";
+import { sessionTable, userRelations, userTable } from "./db/schema/auth";
 import { postsRelations, postTable } from "./db/schema/post";
-import { commentsTable } from "./db/schema/comments";
+import { commentRelations, commentsTable } from "./db/schema/comments";
 import { commentUpvotesRelations, commentUpvotesTable, postUpvotesRelations, postUpvotesTable } from "./db/schema/upvotes";
 
 const EvnSchema = z.object({
@@ -28,7 +28,9 @@ export const db = drizzle(queryClient,{
         commentUpvoted: commentUpvotesTable,
         postsRelations,
         commentUpvotesRelations,
-        postUpvotesRelations
+        postUpvotesRelations,
+        userRelations,
+        commentRelations
     }
 });
 
