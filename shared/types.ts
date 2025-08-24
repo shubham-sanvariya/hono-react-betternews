@@ -62,8 +62,28 @@ export type Post = {
     id: string;
     username: string;
   };
-  isUpvoted: boolean
+  isUpvoted: boolean;
 };
+
+export type Comment = {
+  id: number;
+  userId: string;
+  content: string;
+  points: number;
+  depth: number;
+  commentCount: number;
+  createdAt: String ;
+  postId: number;
+  parentCommentId: number | null;
+  commentUpvotes: {
+    userId: string;
+  }[],
+  author: {
+    username: string;
+    id: string;
+  };
+  childComments?: Comment[];
+}
 
 export type PaginatedResponse<T> = {
   pagination: {
