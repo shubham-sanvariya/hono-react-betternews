@@ -6,6 +6,9 @@ import posgtres from "postgres";
 
 import { z } from "zod";
 import { sessionTable, userTable } from "./db/schema/auth";
+import { postsRelations, postTable } from "./db/schema/post";
+import { commentsTable } from "./db/schema/comments";
+import { commentUpvotesRelations, commentUpvotesTable, postUpvotesRelations, postUpvotesTable } from "./db/schema/upvotes";
 
 const EvnSchema = z.object({
     DATABASE_URL: z.url(),
@@ -18,7 +21,14 @@ const queryClient = posgtres(processEnv.DATABASE_URL);
 export const db = drizzle(queryClient,{
     schema: {
         user: userTable,
-        session: sessionTable
+        session: sessionTable,
+        posts: postTable,
+        comments: commentsTable,
+        postUpvotes: postUpvotesTable,
+        commentUpvoted: commentUpvotesTable,
+        postsRelations,
+        commentUpvotesRelations,
+        postUpvotesRelations
     }
 });
 
