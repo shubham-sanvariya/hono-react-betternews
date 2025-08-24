@@ -31,7 +31,7 @@ export const commentRelations = relations(commentsTable, ({one, many}) => ({
     references: [commentsTable.id],
     relationName: "childComments"
   }),
-  childComment: many(commentsTable, {
+  childComments: many(commentsTable, {
     relationName: "childComments"
   }),
   post: one(postTable, {
