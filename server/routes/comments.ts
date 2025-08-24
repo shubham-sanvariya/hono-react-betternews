@@ -18,6 +18,7 @@ import {
 import { getISOFormatDateQuery } from "@/lib/utils";
 import { commentUpvotesTable } from "@/db/schema/upvotes";
 import { commentsTable } from "@/db/schema/comments";
+import { postTable } from "@/db/schema/post";
 
 export const commentsRouter = new Hono<Context>()
     .post(
@@ -56,10 +57,10 @@ export const commentsRouter = new Hono<Context>()
                     .returning({ commentCount: commentsTable.commentCount });
 
                 const [updatedPost] = await tx
-                    .update(postsTable)
-                    .set({ commentCount: sql`${postsTable.commentCount} + 1` })
-                    .where(eq(postsTable.id, postId))
-                    .returning({ commentCount: postsTable.commentCount });
+                    .update(postTable)
+                    .set({ commentCount: sql`${postTable.commentCount} + 1` })
+                    .where(eq(postTable.id, postId))
+                    .returning({ commentCount: postTable.commentCount });
 
                 if (!updateParentComment || !updatedPost) {
                     throw new HTTPException(404, {
