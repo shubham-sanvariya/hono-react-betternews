@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { HTTPException } from "hono/http-exception";
 import { and, asc, countDistinct, desc, eq, sql } from "drizzle-orm";
 
 import { db } from "@/adapter.ts";
@@ -11,14 +12,16 @@ import { zValidator } from "@hono/zod-validator";
 import z from "zod";
 
 import {
+  createCommentSchema,
   createPostSchema,
   paginationSchema,
+  type Comment,
   type PaginatedResponse,
   type Post,
   type SuccessResponse,
 } from "@/shared/types.ts";
 import { getISOFormatDateQuery } from "@/lib/utils.ts";
-import { HTTPException } from "hono/http-exception";
+import { commentsTable } from "@/db/schema/comments";
 
 export const postRouter = new Hono<Context>()
   .post("/", loggedIn, zValidator("form", createPostSchema), async (c) => {
@@ -126,7 +129,7 @@ export const postRouter = new Hono<Context>()
     );
   })
   .post(
-    "/:id/update",
+    "/:id/upvote",
     loggedIn,
     zValidator("param", z.object({ id: z.coerce.number() })),
     async (c) => {
@@ -150,35 +153,93 @@ export const postRouter = new Hono<Context>()
 
         const [updated] = await tx
           .update(postTable)
-          .set(
-            { points: sql`${postTable.points} + ${pointsChange}` }
-          )
+          .set({ points: sql`${postTable.points} + ${pointsChange}` })
           .where(eq(postTable.id, id))
-          .returning(
-            { points: postTable.points}
-          )
+          .returning({ points: postTable.points });
 
-        if (!updated){
-          throw new HTTPException(404, { message: "Post not found"});
+        if (!updated) {
+          throw new HTTPException(404, { message: "Post not found" });
         }
 
-        if (existingUpvote){
+        if (existingUpvote) {
           await tx
             .delete(postUpvotesTable)
             .where(eq(postUpvotesTable.id, existingUpvote.id));
-        }else {
+        } else {
           await tx
             .insert(postUpvotesTable)
-            .values({ postId: id, userId: user.id})
+            .values({ postId: id, userId: user.id });
         }
 
         return updated.points;
       });
 
-      return c.json<SuccessResponse<{ count: number; isUpvoted : boolean }>>({
-        success: true,
-        message: "Post updated",
-        data: { count: points, isUpvoted: pointsChange > 0 }
-      });
+      return c.json<SuccessResponse<{ count: number; isUpvoted: boolean }>>(
+        {
+          success: true,
+          message: "Post updated",
+          data: { count: points, isUpvoted: pointsChange > 0 },
+        },
+        200,
+      );
     },
+  )
+  .post(
+    "/:id/comment",
+    loggedIn,
+    zValidator("param", z.object({ id: z.coerce.number() })),
+    zValidator("form", createCommentSchema),
+    async (c) => {
+      const { id } = c.req.valid("param");
+      const { content } = c.req.valid("form");
+      const user = c.get("user")!;
+
+      const [comment] = await db.transaction(async (tx) => {
+        const [updated] = await tx
+          .update(postTable)
+          .set({ commentCount: sql`${postTable.commentCount} + 1` })
+          .where(eq(postTable.id, id))
+          .returning({ commentCount: postTable.commentCount });
+
+        if (!updated) {
+          throw new HTTPException(404, {
+            message: "Post not found",
+          });
+        }
+
+        return await tx.insert(commentsTable)
+          .values({
+            content,
+            userId: user.id,
+            postId: id
+          })
+          .returning({
+            id: commentsTable.id,
+            userId: commentsTable.userId,
+            postId: commentsTable.postId,
+            content: commentsTable.content,
+            points: commentsTable.points,
+            depth: commentsTable.depth,
+            parentCommentId: commentsTable.parentCommentId,
+            createdAt: getISOFormatDateQuery(commentsTable.createdAt).as(
+              "created_at",
+            ),
+            commentCount: commentsTable.commentCount,
+          });
+      });
+
+      return c.json<SuccessResponse<Comment>>({
+        success: true,
+        message: "Comment created",
+        data: {
+          ...comment,
+          commentUpvotes: [],
+          childComments: [],
+          author: {
+            username: user.username,
+            id: user.id
+          }
+        } as Comment
+      });
+    }
   );
