@@ -350,4 +350,63 @@ export const postRouter = new Hono<Context>()
         200,
       );
     },
+  )
+  .get("/:id",
+    zValidator("param", z.object({ id: z.coerce.number() })),
+    async (c) => {
+      const user = c.get("user")!;
+
+      const { id } = c.req.valid("param");
+      const postQuery = db
+        .select({
+          id: postTable.id,
+          title: postTable.title,
+          url: postTable.url,
+          points: postTable.points,
+          createdAt: getISOFormatDateQuery(postTable.createdAt),
+          commentCount: postTable.commentCount,
+          author: {
+            username: userTable.username,
+            id: userTable.id,
+          },
+          isUpvoted: user
+            ? sql<boolean>`CASE WHEN
+        ${postUpvotesTable.userId}
+        IS
+        NOT
+        NULL
+        THEN
+        true
+        ELSE
+        false
+        END`
+            : sql<boolean>`false`,
+        })
+        .from(postTable)
+        .leftJoin(userTable, eq(postTable.userId, userTable.id))
+        .where(eq(postTable.id, id));
+
+      if (user) {
+        postQuery.leftJoin(
+          postUpvotesTable,
+          and(
+            eq(postUpvotesTable.postId, postTable.id),
+            eq(postUpvotesTable.userId, user.id),
+          ),
+        );
+      }
+
+      const [post] = await postQuery;
+      if (!post) {
+        throw new HTTPException(404, { message: "Post not found" });
+      }
+
+      return c.json<SuccessResponse<Post>>(
+        {
+          success: true,
+          message: "Post Fetched",
+          data: post as Post
+        }, 200
+      );
+    }
   );
