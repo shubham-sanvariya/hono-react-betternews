@@ -1,5 +1,6 @@
 import z from "zod";
 import { insertPostSchema } from "@/db/schema/post.ts";
+import { insertCommentSchema } from "@/db/schema/comments.ts";
 
 
 export type SuccessResponse<T = void> = {
@@ -46,6 +47,8 @@ export const paginationSchema = z.object({
   author: z.optional(z.string()),
   site: z.string().optional()
 });
+
+export const createCommentSchema = insertCommentSchema.pick({ content: true });
 
 export type Post = {
   id: number,
