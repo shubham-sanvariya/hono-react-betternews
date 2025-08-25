@@ -1,7 +1,9 @@
 import z from "zod";
-import { insertPostSchema } from "@/db/schema/post.ts";
-import { insertCommentSchema } from "@/db/schema/comments.ts";
+import { insertCommentSchema } from "../server/db/schema/comments";
+import { insertPostSchema } from "../server/db/schema/post";
+import type { ApiRoutes } from "../server/index";
 
+export { type ApiRoutes };
 
 export type SuccessResponse<T = void> = {
     success: true;
