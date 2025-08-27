@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FieldInfo } from "@/components/field-info";
 
 const signupSearchSchema = z.object({
   redirect: fallback(z.string(), "/").default("/"),
@@ -67,6 +68,25 @@ function Signup() {
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
                     />
+                    <FieldInfo field={field}/>
+                  </div>
+                )}
+              />
+            </div>
+            <div className={"grid gap-4"}>
+              <form.Field
+                name={"password"}
+                children={(field) => (
+                  <div className={"grid gap-2"}>
+                    <Label htmlFor={field.name}>Password</Label>
+                    <Input
+                      id={field.name}
+                      name={field.name}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                    />
+                    <FieldInfo field={field}/>
                   </div>
                 )}
               />
