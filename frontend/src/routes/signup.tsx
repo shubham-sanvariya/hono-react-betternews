@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useForm } from "@tanstack/react-form";
 import { fallback, zodSearchValidator } from "@tanstack/router-zod-adapter";
 
@@ -15,6 +15,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FieldInfo } from "@/components/field-info";
+import { Button } from "@/components/ui/button";
+import { postSignup } from "@/lib/api";
+import { toast } from "sonner";
 
 const signupSearchSchema = z.object({
   redirect: fallback(z.string(), "/").default("/"),
@@ -27,6 +30,8 @@ export const Route = createFileRoute("/signup")({
 
 function Signup() {
   const search = Route.useSearch();
+  const navigate = useNavigate();
+
   const form = useForm({
     defaultValues: {
       username: "",
@@ -35,6 +40,22 @@ function Signup() {
     validators: {
       onChange: loginSchema,
     },
+    onSubmit: async ({ value }) => {
+      const res = await postSignup(value.username, value.password);
+
+      if (res.success){
+        await navigate({ to: search.redirect });
+        return null;
+      }else {
+        if (!res.isFormError){
+            toast.error("Signup failed", { description: res.error });
+        }
+
+        form.setErrorMap({
+          onSubmit: res.isFormError ? res.error : "Unexpected error"
+        })
+      }
+    }
   });
 
   return (
@@ -44,7 +65,8 @@ function Signup() {
           onSubmit={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            form.handleSubmit();
+            form.handleSubmit().finally(() => console.log("signup form submit")
+            );
           }}
         >
           <CardHeader>
@@ -72,8 +94,6 @@ function Signup() {
                   </div>
                 )}
               />
-            </div>
-            <div className={"grid gap-4"}>
               <form.Field
                 name={"password"}
                 children={(field) => (
@@ -81,6 +101,7 @@ function Signup() {
                     <Label htmlFor={field.name}>Password</Label>
                     <Input
                       id={field.name}
+                      type={"password"}
                       name={field.name}
                       value={field.state.value}
                       onBlur={field.handleBlur}
@@ -90,6 +111,26 @@ function Signup() {
                   </div>
                 )}
               />
+             <form.Subscribe
+                selector={(state) => [state.errorMap]}
+                children={([errorMap]) => {
+                  return errorMap.onSubmit ? (
+                    <p className="text-[0.8rem] font-medium text-destructive">
+                      {String(errorMap.onSubmit)}
+                    </p>
+                  ) : null
+                }}
+             />
+              <form.Subscribe
+                selector={(state) => [state.canSubmit, state.isSubmitting]}
+                children={([canSubmit, isSubmitting]) => (
+                  <Button type={"submit"} disabled={!canSubmit}
+                    className="w-full"
+                  >
+                    {isSubmitting ? "..." : "Signup"}
+                  </Button>
+                )}
+             />
             </div>
           </CardContent>
         </form>
