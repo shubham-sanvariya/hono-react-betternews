@@ -1,6 +1,7 @@
 import { hc } from "hono/client";
 
 import type { ApiRoutes, ErrorResponse, SuccessResponse } from "@/shared/types";
+import { queryOptions } from "@tanstack/react-query";
 
 const client = hc<ApiRoutes>("/", {
   fetch: (input: RequestInfo | URL, init?: RequestInit) =>
@@ -31,3 +32,21 @@ export const postSignup = async (username: string, password: string) =>{
     } as ErrorResponse
   }
 }
+
+export const getUser = async () => {
+  const res = await client.auth.user.$get();
+
+  if (res.ok) {
+    const data = await res.json();
+
+    return data.data.username;
+  }
+
+  return null;
+};
+
+export const userQueryOptions = () => queryOptions({
+  queryKey: ["user"],
+  queryFn: getUser,
+  staleTime: Infinity
+})
