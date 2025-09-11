@@ -13,10 +13,12 @@ import {
 } from "@/components/ui/sheet";
 import { useQuery } from "@tanstack/react-query";
 import { userQueryOptions } from "@/lib/api";
+import { useState } from "react";
 
 export function Header() {
 
   const { data: user } = useQuery(userQueryOptions());
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
     <header
@@ -50,12 +52,12 @@ export function Header() {
               <a href="api/auth/logout">Log out</a>
             </Button>
           </>) : (<Button asChild size="sm" variant={'secondary'} className="bg-secondary-foreground text-primary-foreground hover:bg-secondary-foreground/70">
-              <Link to="/">
+              <Link to="/login">
                 Log in
               </Link>
             </Button>)}
         </div>
-        <Sheet>
+        <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild>
             <Button variant={"secondary"} size={"icon"} className={"md:hidden"}>
               <MenuIcon className={"size-6"} />
@@ -69,13 +71,13 @@ export function Header() {
               </SheetDescription>
             </SheetHeader>
             <nav className={'flex p-2 flex-col space-y-4'}>
-              <Link to={"/"} className={"hover:underline"}>
+              <Link onClick={() => setIsOpen(false)} to={"/"} className={"hover:underline"}>
                 new
               </Link>
-              <Link to={"/"} className={"hover:underline"}>
+              <Link onClick={() => setIsOpen(false)} to={"/"} className={"hover:underline"}>
                 top
               </Link>
-              <Link to={"/"} className={"hover:underline"}>
+              <Link onClick={() => setIsOpen(false)} to={"/"} className={"hover:underline"}>
                 submit
               </Link>
               {user ? (<>
@@ -84,7 +86,7 @@ export function Header() {
                   <a href="api/auth/logout">Log out</a>
                 </Button>
               </>) : (<Button asChild size="sm" variant={'secondary'} className="bg-secondary-foreground text-primary-foreground hover:bg-secondary-foreground/70">
-                <Link to="/">
+                <Link onClick={() => setIsOpen(false)} to="/login">
                   Log in
                 </Link>
               </Button>)}
