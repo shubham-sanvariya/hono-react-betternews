@@ -11,8 +11,13 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { useQuery } from "@tanstack/react-query";
+import { userQueryOptions } from "@/lib/api";
 
 export function Header() {
+
+  const { data: user } = useQuery(userQueryOptions());
+
   return (
     <header
       className={
@@ -38,7 +43,18 @@ export function Header() {
             </Link>
           </nav>
         </div>
-
+        <div className="hidden items-center space-x-4">
+          {user ? (<>
+            <span>{user}</span>
+            <Button asChild size="sm" variant={'secondary'} className="bg-secondary-foreground text-primary-foreground hover:bg-secondary-foreground/70">
+              <a href="api/auth/logout">Log out</a>
+            </Button>
+          </>) : (<Button asChild size="sm" variant={'secondary'} className="bg-secondary-foreground text-primary-foreground hover:bg-secondary-foreground/70">
+              <Link to="/">
+                Log in
+              </Link>
+            </Button>)}
+        </div>
         <Sheet>
           <SheetTrigger asChild>
             <Button variant={"secondary"} size={"icon"} className={"md:hidden"}>
@@ -52,7 +68,7 @@ export function Header() {
                 Navigation
               </SheetDescription>
             </SheetHeader>
-            <nav className={'flex flex-col space-y-4'}>
+            <nav className={'flex p-2 flex-col space-y-4'}>
               <Link to={"/"} className={"hover:underline"}>
                 new
               </Link>
@@ -62,6 +78,16 @@ export function Header() {
               <Link to={"/"} className={"hover:underline"}>
                 submit
               </Link>
+              {user ? (<>
+                <span>{user}</span>
+                <Button asChild size="sm" variant={'secondary'} className="bg-secondary-foreground text-primary-foreground hover:bg-secondary-foreground/70">
+                  <a href="api/auth/logout">Log out</a>
+                </Button>
+              </>) : (<Button asChild size="sm" variant={'secondary'} className="bg-secondary-foreground text-primary-foreground hover:bg-secondary-foreground/70">
+                <Link to="/">
+                  Log in
+                </Link>
+              </Button>)}
             </nav>
           </SheetContent>
         </Sheet>
