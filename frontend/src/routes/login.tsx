@@ -1,5 +1,6 @@
 import {
-  createFileRoute, redirect,
+  createFileRoute,
+  redirect,
   useNavigate,
   useRouter,
 } from "@tanstack/react-router";
@@ -15,20 +16,24 @@ import { z } from "zod";
 
 
 import { loginSchema } from "@/shared/types";
-import { postSignup, userQueryOptions } from "@/lib/api";
+import { postLogin, userQueryOptions } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FieldInfo } from "@/components/field-info";
 
-const signupSearchSchema = z.object({
+
+
+
+
+const loginSearchSchema = z.object({
   redirect: fallback(z.string(), "/").default("/"),
 });
 
-export const Route = createFileRoute("/signup")({
-  component: () => <Signup />,
-  validateSearch: zodSearchValidator(signupSearchSchema),
+export const Route = createFileRoute('/login')({
+  component: Login,
+  validateSearch: zodSearchValidator(loginSearchSchema),
   beforeLoad: async ({ context, search }) => {
     const user = await context.queryClient.ensureQueryData(userQueryOptions());
 
@@ -36,9 +41,9 @@ export const Route = createFileRoute("/signup")({
       throw redirect({ to: search.redirect })
     }
   }
-});
+})
 
-function Signup() {
+function Login() {
   const search = Route.useSearch();
   const navigate = useNavigate();
   const router = useRouter();
@@ -53,7 +58,7 @@ function Signup() {
       onChange: loginSchema,
     },
     onSubmit: async ({ value }) => {
-      const res = await postSignup(value.username, value.password);
+      const res = await postLogin(value.username, value.password);
 
       if (res.success){
         await queryClient.invalidateQueries({
@@ -64,7 +69,7 @@ function Signup() {
         return null;
       }else {
         if (!res.isFormError){
-            toast.error("Signup failed", { description: res.error });
+          toast.error("Signup failed", { description: res.error });
         }
 
         form.setErrorMap({
@@ -81,14 +86,14 @@ function Signup() {
           onSubmit={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            form.handleSubmit().finally(() => console.log("signup form submit")
+            form.handleSubmit().finally(() => console.log("login form submit")
             );
           }}
         >
           <CardHeader>
-            <CardTitle className="text-center text-2xl">Signup</CardTitle>
+            <CardTitle className="text-center text-2xl">Login</CardTitle>
             <CardDescription>
-              Enter your details below to create an account
+              Enter your details below to login
             </CardDescription>
           </CardHeader>
 
@@ -127,7 +132,7 @@ function Signup() {
                   </div>
                 )}
               />
-             <form.Subscribe
+              <form.Subscribe
                 selector={(state) => [state.errorMap]}
                 children={([errorMap]) => {
                   return errorMap.onSubmit ? (
@@ -136,17 +141,17 @@ function Signup() {
                     </p>
                   ) : null
                 }}
-             />
+              />
               <form.Subscribe
                 selector={(state) => [state.canSubmit, state.isSubmitting]}
                 children={([canSubmit, isSubmitting]) => (
                   <Button type={"submit"} disabled={!canSubmit}
-                    className="w-full"
+                          className="w-full"
                   >
-                    {isSubmitting ? "..." : "Signup"}
+                    {isSubmitting ? "..." : "Login"}
                   </Button>
                 )}
-             />
+              />
             </div>
           </CardContent>
         </form>
