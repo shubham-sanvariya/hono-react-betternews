@@ -1,5 +1,5 @@
 import {
-  createFileRoute,
+  createFileRoute, Link,
   redirect,
   useNavigate,
   useRouter,
@@ -153,6 +153,13 @@ function Login() {
                 )}
               />
             </div>
+
+              <div className="mt-4 text-center text-sm">
+                  Dont have an account?{" "}
+                  <Link to={'/signup'} className={"underline"}>
+                      Sign up
+                  </Link>
+              </div>
           </CardContent>
         </form>
       </Card>

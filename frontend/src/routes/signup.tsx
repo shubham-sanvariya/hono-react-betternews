@@ -1,5 +1,7 @@
 import {
-  createFileRoute, redirect,
+  createFileRoute,
+  Link,
+  redirect,
   useNavigate,
   useRouter,
 } from "@tanstack/react-router";
@@ -7,17 +9,19 @@ import { useForm } from "@tanstack/react-form";
 import { useQueryClient } from "@tanstack/react-query";
 import { fallback, zodSearchValidator } from "@tanstack/router-zod-adapter";
 
-
-
 import { toast } from "sonner";
 import { z } from "zod";
-
-
 
 import { loginSchema } from "@/shared/types";
 import { postSignup, userQueryOptions } from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FieldInfo } from "@/components/field-info";
@@ -32,10 +36,10 @@ export const Route = createFileRoute("/signup")({
   beforeLoad: async ({ context, search }) => {
     const user = await context.queryClient.ensureQueryData(userQueryOptions());
 
-    if (user){
-      throw redirect({ to: search.redirect })
+    if (user) {
+      throw redirect({ to: search.redirect });
     }
-  }
+  },
 });
 
 function Signup() {
@@ -55,23 +59,23 @@ function Signup() {
     onSubmit: async ({ value }) => {
       const res = await postSignup(value.username, value.password);
 
-      if (res.success){
+      if (res.success) {
         await queryClient.invalidateQueries({
-          queryKey: ["user"]
+          queryKey: ["user"],
         });
         await router.invalidate();
         await navigate({ to: search.redirect });
         return null;
-      }else {
-        if (!res.isFormError){
-            toast.error("Signup failed", { description: res.error });
+      } else {
+        if (!res.isFormError) {
+          toast.error("Signup failed", { description: res.error });
         }
 
         form.setErrorMap({
-          onSubmit: res.isFormError ? res.error : "Unexpected error"
-        })
+          onSubmit: res.isFormError ? res.error : "Unexpected error",
+        });
       }
-    }
+    },
   });
 
   return (
@@ -81,8 +85,9 @@ function Signup() {
           onSubmit={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            form.handleSubmit().finally(() => console.log("signup form submit")
-            );
+            form
+              .handleSubmit()
+              .finally(() => console.log("signup form submit"));
           }}
         >
           <CardHeader>
@@ -106,7 +111,7 @@ function Signup() {
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
                     />
-                    <FieldInfo field={field}/>
+                    <FieldInfo field={field} />
                   </div>
                 )}
               />
@@ -123,30 +128,39 @@ function Signup() {
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
                     />
-                    <FieldInfo field={field}/>
+                    <FieldInfo field={field} />
                   </div>
                 )}
               />
-             <form.Subscribe
+              <form.Subscribe
                 selector={(state) => [state.errorMap]}
                 children={([errorMap]) => {
                   return errorMap.onSubmit ? (
                     <p className="text-[0.8rem] font-medium text-destructive">
                       {String(errorMap.onSubmit)}
                     </p>
-                  ) : null
+                  ) : null;
                 }}
-             />
+              />
               <form.Subscribe
                 selector={(state) => [state.canSubmit, state.isSubmitting]}
                 children={([canSubmit, isSubmitting]) => (
-                  <Button type={"submit"} disabled={!canSubmit}
+                  <Button
+                    type={"submit"}
+                    disabled={!canSubmit}
                     className="w-full"
                   >
                     {isSubmitting ? "..." : "Signup"}
                   </Button>
                 )}
-             />
+              />
+            </div>
+
+            <div className="mt-4 text-center text-sm">
+              Already have an account?{" "}
+              <Link to={"/login"} className={"underline"}>
+                Log in
+              </Link>
             </div>
           </CardContent>
         </form>
