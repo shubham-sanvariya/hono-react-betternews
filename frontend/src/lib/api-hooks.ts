@@ -61,7 +61,7 @@ export const useUpvotePost = () => {
                 refetchType: "none"
             })
         },
-        onError: (err, postId, context) => {
+        onError: (err, _, context) => {
             console.error(err);
             toast.error("Failed to upvote post")
             if (context?.prevData) {

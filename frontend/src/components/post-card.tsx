@@ -6,7 +6,6 @@ import { Link } from "@tanstack/react-router";
 import { badgeVariants } from "./ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { userQueryOptions } from "@/lib/api";
-import { useEffect } from "react";
 
 
 export const PostCard = ({
@@ -14,17 +13,15 @@ export const PostCard = ({
     onUpvote,
 }: {
     post: Post;
-    onUpvote?: (id: number) => void;
+    onUpvote: (id: number) => void;
 }) => {
     const { data: user } = useQuery(userQueryOptions());
-    useEffect(() => {
-        console.log(post.isUpvoted)
-    },[]);
+
     return (
         <Card className="flex flex-row items-start justify-start pt-3">
             <button
                 onClick={() => {
-                    onUpvote?.(post.id);
+                    onUpvote(post.id);
                 }}
                 className={cn(
                     "ml-3 flex flex-col items-center justify-center text-muted-foreground hover:text-primary",

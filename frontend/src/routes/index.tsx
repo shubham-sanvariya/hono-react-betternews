@@ -7,6 +7,7 @@ import { getPosts } from '@/lib/api';
 import { SortBar } from "@/components/sort-bar";
 import { PostCard } from '@/components/post-card';
 import { Button } from '@/components/ui/button';
+import { useUpvotePost } from '@/lib/api-hooks';
 
 const homeSearchSchema = z.object({
   sortBy: fallback(sortBySchema, "points").default("recent"),
@@ -47,6 +48,8 @@ function HomeComponent() {
   const { sortBy, order, author, site } = Route.useSearch();
   const { data, isFetchingNextPage, fetchNextPage, hasNextPage } = useSuspenseInfiniteQuery(postsInfiniteQueryOptions({ sortBy, order, author, site }));
 
+  const upvoteMutation = useUpvotePost();
+
   return (
     <div className="mx-auto max-w-3xl p-4">
       <h1 className='mb-6 text-2xl font-bold text-foreground'>Submissions</h1>
@@ -54,7 +57,7 @@ function HomeComponent() {
       <div className='space-y-4'>
         {data?.pages.map((page) => (
           page.data.map((post) => (
-            <PostCard post={post} key={post.id} />
+            <PostCard post={post} key={post.id} onUpvote={() => upvoteMutation.mutate(post.id.toString())}/>
           ))
         ))}
         <div className='mt-6'>
