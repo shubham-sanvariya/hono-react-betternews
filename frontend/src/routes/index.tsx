@@ -4,6 +4,7 @@ import { fallback, zodSearchValidator } from '@tanstack/router-zod-adapter'
 import { orderSchema, sortBySchema } from '@/shared/types'
 import { infiniteQueryOptions, useSuspenseInfiniteQuery } from '@tanstack/react-query';
 import { getPosts } from '@/lib/api';
+import { SortBar } from "@/components/sort-bar";
 
 const homeSearchSchema = z.object({
   sortBy: fallback(sortBySchema, "points").default("recent"),
@@ -47,7 +48,14 @@ function HomeComponent() {
   return (
     <div className="mx-auto max-w-3xl p-4">
       <h1 className='mb-6 text-2xl font-bold text-foreground'>Submissions</h1>
-      {JSON.stringify(data)}
+      <SortBar sortBy={sortBy} order={order}/>
+      {data?.pages.map((page) => (
+        page.data.map((post) => (
+          <div>
+            {post.title}
+          </div>
+        ))
+      ))}
     </div>
   )
 }
