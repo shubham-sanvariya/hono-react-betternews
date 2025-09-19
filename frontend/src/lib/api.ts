@@ -1,4 +1,4 @@
-import { hc } from "hono/client";
+import { hc, InferResponseType } from "hono/client";
 import { queryOptions } from "@tanstack/react-query";
 
 import type {
@@ -65,6 +65,8 @@ export const postLogin = async (username: string, password: string) =>{
   }
 }
 
+export type GetPostsSuccess = InferResponseType<typeof client.posts.$get>;
+
 export const getPosts = async ( {pageParam = 1, pagination} : {
   pageParam: number,
   pagination: {
@@ -110,4 +112,20 @@ export const userQueryOptions = () => queryOptions({
   queryKey: ["user"],
   queryFn: getUser,
   staleTime: Infinity
-})
+});
+
+export async function upvotePost(id: string) {
+    const res = await client.posts[":id"].upvote.$post({
+      param: {
+        id
+      }
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      return data;
+    }
+
+    const data = (await res.json()) as unknown as ErrorResponse;
+    throw new Error(data.error);
+}
